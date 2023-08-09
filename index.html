@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <title>トキワ荘関連施設 ウェブスタンプラリー</title>
+  <style>
+    body {
+      font-size: 24px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 36px;
+    }
+
+    h2 {
+      font-size: 30px;
+    }
+
+    .facility {
+      margin-bottom: 20px;
+    }
+
+    button {
+      font-size: 24px;
+    }
+
+    p {
+      font-size: 24px;
+      color: green;
+    }
+
+    h3 {
+      font-size: 48px;
+      color: red;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>トキワ荘関連施設 ウェブスタンプラリー7</h1>
+
+  <div class="facility">
+    <h2>トキワ荘マンガミュージアム</h2>
+    <div id="image-facility1"><img
+        src="https://drive.google.com/uc?id=1VCP3U3xsbBLp7aweb-ysBvjfInKwjmho" width="500" height="500"></div>
+    <button onclick="startCamera('Tokiwa01')">チェック</button>
+    <p id="result1"></p>
+  </div>
+
+  <div class="facility">
+    <h2>トキワ荘通り昭和レトロ館</h2>
+    <div id="image-facility2"><img
+        src="https://drive.google.com/uc?id=1VCP3U3xsbBLp7aweb-ysBvjfInKwjmho" width="500" height="500"></div>
+    <button onclick="startCamera('Tokiwa02')">チェック</button>
+    <p id="result2"></p>
+  </div>
+
+  <div class="facility">
+    <h2>豊島区トキワ荘通りお休み処</h2>
+    <div id="image-facility3"><img
+        src="https://drive.google.com/uc?id=1VCP3U3xsbBLp7aweb-ysBvjfInKwjmho" width="500" height="500"></div>
+    <button onclick="startCamera('Tokiwa03')">チェック</button>
+    <p id="result3"></p>
+  </div>
+
+  <div class="facility">
+    <h2>トキワ荘マンガステーション</h2>
+    <div id="image-facility4"><img
+        src="https://drive.google.com/uc?id=1VCP3U3xsbBLp7aweb-ysBvjfInKwjmho" width="500" height="500"></div>
+    <button onclick="startCamera('Tokiwa04')">チェック</button>
+    <p id="result4"></p>
+  </div>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@2.0.4/dist/jsqr.min.js"></script>
+
+  <script>
+    let cameraActive = false;
+    let stream;
+    let videoElement;
+    let cameraTimer;
+
+    function showResult(elementId, result) {
+      const element = document.getElementById(elementId);
+      if (element) {
+        element.textContent = result;
+      }
+    }
+
+    const codes = {
+      "Tokiwa01": "Tokiwa01",
+      "Tokiwa02": "Tokiwa02",
+      "Tokiwa03": "Tokiwa03",
+      "Tokiwa04": "Tokiwa04"
+    };
+
+    function startCamera(code) {
+      if (cameraActive) return;
+
+      cameraActive = true;
+      showResult(`result${code.substr(-1)}`, "カメラ起動中...");
+
+      videoElement = document.createElement("video");
+      videoElement.autoplay = true;
+      Object.assign(videoElement.style, {
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            transform: "scaleX(-1)"
+          });
+      document.body.appendChild(videoElement);
+
+      let timerId;
+
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+        .then(stream => {
+          // カメラへのアクセスが許可された場合の処理
+
+          videoElement.srcObject = stream;
+          const canvasElement = document.createElement("canvas");
+          const canvasContext = canvasElement.getContext("2d");
+
+          function scanQRCode() {
+            // QRコードのスキャン処理
+
+            if (!cameraActive) return;
+
+            canvasElement.width = videoElement.videoWidth;
+            canvasElement.height = videoElement.videoHeight;
+            canvasContext.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+            const imageData = canvasContext.getImageData(0, 0, canvasElement.width, canvasElement.height);
+            const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+            if (code) {
+              const result = code.data;
+              if (result === codes[result]) {
+                showResult(`result${result.substr(-1)}`, "OK！");
+                if (result === "Tokiwa01") {
+                  var image = document.querySelector("#image-facility1 img");
+                  image.src = "https://drive.google.com/uc?id=1-C6ydYzCbjK-1rgxwu1D5BDF9OhXBMkT";
+                } else if (result === "Tokiwa02") {
+                  var image = document.querySelector("#image-facility2 img");
+                  image.src = "https://drive.google.com/uc?id=1GNV7EIqymyhf4-hKEI1q0QHjMr2T0pzt";
+                } else if (result === "Tokiwa03") {
+                  var image = document.querySelector("#image-facility3 img");
+                  image.src = "https://drive.google.com/uc?id=1IbMZ8KIJgznucuQ9anIN4Y7eNwCYmHsk";
+                } else if (result === "Tokiwa04") {
+                  var image = document.querySelector("#image-facility4 img");
+                  image.src = "https://drive.google.com/uc?id=1DH1gkgX2VcYVZWFEDmDeloRtnoJHyfWy";
+                }
+              } else {
+                stopCamera(result);
+                alert("違うよ！");
+              }
+            }
+          }
+
+          function stopCameraIfInactive() {
+            clearInterval(timerId);
+            stopCamera();
+            alert("カメラを終了しました。");
+          }
+
+          timerId = setInterval(stopCameraIfInactive, 10000);
+
+          cameraTimer = setInterval(scanQRCode, 1000);
+        })
+        .catch(error => {
+          // カメラへのアクセスが拒否された場合の処理
+          console.error("カメラを起動できませんでした:", error);
+          cameraActive = false;
+        });
+    }
+
+    function stopCamera() {
+      // カメラ停止処理
+    }
+  </script>
+</body>
+
+</html>
